@@ -6,7 +6,9 @@ import { ingredientsReducer } from './slices/ingredients';
 import { ordersReducer } from './slices/orders';
 import { userReducer } from './slices/user';
 
+// TODO: Заменить на настоящий корневой редьюсер
 export const rootReducer = combineReducers({
+  // TODO: Собрать здесь редьюсеры слайсов
   ingredients: ingredientsReducer,
   burgerConstructor: constructorReducer,
   feed: feedReducer,

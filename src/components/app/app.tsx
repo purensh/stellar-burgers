@@ -28,6 +28,8 @@ import type { Location } from 'react-router-dom';
 
 import '../../index.css';
 
+// Класс .message сохранён на случай возврата старого экрана загрузки/ошибки.
+// eslint-disable-next-line css-modules/no-unused-class
 import styles from './app.module.css';
 
 type TLocationState = {
@@ -50,6 +52,8 @@ const OrderDetailsModal = ({ onClose }: TOrderDetailsModalProps): React.JSX.Elem
   );
 };
 
+/* Маршруты показываются только когда ингредиенты загружены: без них не
+   отрисовать ни конструктор, ни состав заказа. */
 const App = (): React.JSX.Element => {
   const dispatch = useDispatch();
   const location = useLocation();

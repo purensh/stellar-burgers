@@ -20,6 +20,7 @@ import type { TIngredient } from '@utils-types';
 export const OrderInfo = (): React.JSX.Element => {
   const { number } = useParams<{ number: string }>();
   const dispatch = useDispatch();
+  /** TODO: взять переменные orderData и ingredients из стора */
   const orderData = useSelector(selectOrderData);
   const ingredients = useSelector(selectIngredients);
   const isOrderDataLoading = useSelector(selectOrderDataLoading);

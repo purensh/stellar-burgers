@@ -8,6 +8,7 @@ export const IngredientDetails = (): React.JSX.Element => {
   const { id } = useParams<{ id: string }>();
   const ingredients = useSelector(selectIngredients);
   const isIngredientsLoading = useSelector(selectIngredientsLoading);
+  // TODO: Взять переменную из стора
   const ingredientData = ingredients.find((ingredient) => ingredient._id === id);
 
   if (isIngredientsLoading) {

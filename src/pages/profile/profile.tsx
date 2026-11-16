@@ -6,6 +6,7 @@ import { type SyntheticEvent, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from '@services/store';
 
 export const Profile = (): React.JSX.Element => {
+  /** TODO: Взять переменную из стора */
   const user = useSelector(selectUser);
   const isUpdatingUser = useSelector(selectUserUpdating);
   const updateUserError = useSelector(selectUpdateUserError);

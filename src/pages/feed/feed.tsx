@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from '@services/store';
 
 export const Feed = (): React.JSX.Element => {
   const dispatch = useDispatch();
+  // TODO: Взять переменную из стора
   const orders = useSelector(selectFeedOrders);
   const isLoading = useSelector(selectFeedLoading);
   const error = useSelector(selectFeedError);
@@ -21,6 +22,7 @@ export const Feed = (): React.JSX.Element => {
       return;
     }
 
+    // TODO: Запросить ленту заказов
     void dispatch(fetchFeeds());
   };
 
