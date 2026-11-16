@@ -28,8 +28,6 @@ import type { Location } from 'react-router-dom';
 
 import '../../index.css';
 
-// Класс .message сохранён на случай возврата старого экрана загрузки/ошибки.
-// eslint-disable-next-line css-modules/no-unused-class
 import styles from './app.module.css';
 
 type TLocationState = {
