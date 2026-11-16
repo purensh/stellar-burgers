@@ -1,24 +1,54 @@
+import { selectConstructorItems } from '@selectors/constructor';
+import { selectOrderModalData, selectOrderRequest } from '@selectors/orders';
+import { selectIsAuthChecked, selectUser } from '@selectors/user';
+import { clearConstructor } from '@slices/constructor';
+import { clearOrderModal, createOrder } from '@slices/orders';
 import { BurgerConstructorUI } from '@ui';
 import { useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-import type { TConstructorIngredient, TConstructorState, TOrder } from '@utils-types';
+import { useDispatch, useSelector } from '@services/store';
 
-export const BurgerConstructor = (): React.JSX.Element | null => {
-  /** TODO: Взять переменные constructorItems, orderRequest и orderModalData из стора */
-  const constructorItems: TConstructorState = {
-    bun: null,
-    ingredients: [],
-  };
-  const orderRequest = false;
-  const orderModalData: TOrder | null = null;
+import type { TConstructorIngredient } from '@utils-types';
+
+export const BurgerConstructor = (): React.JSX.Element => {
+  const constructorItems = useSelector(selectConstructorItems);
+  const orderRequest = useSelector(selectOrderRequest);
+  const orderModalData = useSelector(selectOrderModalData);
+  const user = useSelector(selectUser);
+  const isAuthChecked = useSelector(selectIsAuthChecked);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const onOrderClick = (): void => {
+    if (!isAuthChecked) return;
+
+    if (!user) {
+      void navigate('/login', { state: { from: location } });
+      return;
+    }
+
     if (!constructorItems.bun || orderRequest) return;
-    // TODO: Оформить заказ
+
+    const ingredients = [
+      constructorItems.bun._id,
+      ...constructorItems.ingredients.map((ingredient) => ingredient._id),
+      constructorItems.bun._id,
+    ];
+
+    void dispatch(createOrder(ingredients))
+      .unwrap()
+      .then(() => {
+        dispatch(clearConstructor());
+      })
+      .catch(() => undefined);
   };
 
   const closeOrderModal = (): void => {
-    // TODO: Закрыть модальное окно и сбросить заказ
+    if (orderRequest) return;
+
+    dispatch(clearOrderModal());
   };
 
   const price = useMemo(
