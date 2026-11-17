@@ -6,7 +6,7 @@ import {
 import {
   selectOrderData,
   selectOrderDataLoading,
-  selectOrdersError,
+  selectOrderDetailsError,
 } from '@selectors/orders';
 import { getOrderByNumber } from '@slices/orders';
 import { OrderInfoUI, Preloader } from '@ui';
@@ -20,12 +20,11 @@ import type { TIngredient } from '@utils-types';
 export const OrderInfo = (): React.JSX.Element => {
   const { number } = useParams<{ number: string }>();
   const dispatch = useDispatch();
-  /** TODO: взять переменные orderData и ingredients из стора */
   const orderData = useSelector(selectOrderData);
   const ingredients = useSelector(selectIngredients);
   const isOrderDataLoading = useSelector(selectOrderDataLoading);
   const isIngredientsLoading = useSelector(selectIngredientsLoading);
-  const orderError = useSelector(selectOrdersError);
+  const orderDetailsError = useSelector(selectOrderDetailsError);
   const ingredientsError = useSelector(selectIngredientsError);
   const orderNumber = Number(number);
 
@@ -83,10 +82,10 @@ export const OrderInfo = (): React.JSX.Element => {
     return <Preloader />;
   }
 
-  if (orderError) {
+  if (orderDetailsError) {
     return (
       <p className="text text_type_main-default">
-        Не удалось загрузить заказ: {orderError}
+        Не удалось загрузить заказ: {orderDetailsError}
       </p>
     );
   }

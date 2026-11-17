@@ -12,7 +12,6 @@ import { useDispatch, useSelector } from '@services/store';
 import type { TConstructorIngredient } from '@utils-types';
 
 export const BurgerConstructor = (): React.JSX.Element => {
-  /** TODO: Взять переменные constructorItems, orderRequest и orderModalData из стора */
   const constructorItems = useSelector(selectConstructorItems);
   const orderRequest = useSelector(selectOrderRequest);
   const orderModalData = useSelector(selectOrderModalData);
@@ -32,7 +31,6 @@ export const BurgerConstructor = (): React.JSX.Element => {
 
     if (!constructorItems.bun || orderRequest) return;
 
-    // TODO: Оформить заказ
     const ingredients = [
       constructorItems.bun._id,
       ...constructorItems.ingredients.map((ingredient) => ingredient._id),
@@ -50,7 +48,6 @@ export const BurgerConstructor = (): React.JSX.Element => {
   const closeOrderModal = (): void => {
     if (orderRequest) return;
 
-    // TODO: Закрыть модальное окно и сбросить заказ
     dispatch(clearOrderModal());
   };
 

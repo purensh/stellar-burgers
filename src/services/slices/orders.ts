@@ -3,28 +3,20 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import type { TOrder } from '@utils-types';
 
-type TOrdersState = {
-  orders: TOrder[];
-  orderData: TOrder | null;
+type TOrderState = {
   orderRequest: boolean;
   orderModalData: TOrder | null;
-  isOrdersLoading: boolean;
-  isOrderDataLoading: boolean;
   error: string | null;
 };
 
-const initialState: TOrdersState = {
-  orders: [],
-  orderData: null,
+const orderInitialState: TOrderState = {
   orderRequest: false,
   orderModalData: null,
-  isOrdersLoading: false,
-  isOrderDataLoading: false,
   error: null,
 };
 
 export const createOrder = createAsyncThunk<TOrder, string[]>(
-  'orders/createOrder',
+  'order/createOrder',
   async (ingredients) => {
     const data = await orderBurgerApi(ingredients);
 
@@ -36,32 +28,9 @@ export const createOrder = createAsyncThunk<TOrder, string[]>(
   }
 );
 
-export const getOrders = createAsyncThunk<TOrder[]>('orders/getOrders', async () =>
-  getOrdersApi()
-);
-
-export const getOrderByNumber = createAsyncThunk<TOrder, number>(
-  'orders/getOrderByNumber',
-  async (number) => {
-    const data = await getOrderByNumberApi(number);
-
-    if (!data.success) {
-      throw new Error('Не удалось загрузить заказ');
-    }
-
-    const order = data.orders[0];
-
-    if (!order) {
-      throw new Error('Заказ не найден');
-    }
-
-    return order;
-  }
-);
-
-export const ordersSlice = createSlice({
-  name: 'orders',
-  initialState,
+export const orderSlice = createSlice({
+  name: 'order',
+  initialState: orderInitialState,
   reducers: {
     clearOrderModal: (state) => {
       state.orderModalData = null;
@@ -81,7 +50,32 @@ export const ordersSlice = createSlice({
       .addCase(createOrder.rejected, (state, action) => {
         state.orderRequest = false;
         state.error = action.error.message ?? 'Не удалось оформить заказ';
-      })
+      });
+  },
+});
+
+type TUserOrdersState = {
+  orders: TOrder[];
+  isOrdersLoading: boolean;
+  error: string | null;
+};
+
+const userOrdersInitialState: TUserOrdersState = {
+  orders: [],
+  isOrdersLoading: false,
+  error: null,
+};
+
+export const getOrders = createAsyncThunk<TOrder[]>('userOrders/getOrders', async () =>
+  getOrdersApi()
+);
+
+export const userOrdersSlice = createSlice({
+  name: 'userOrders',
+  initialState: userOrdersInitialState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
       .addCase(getOrders.pending, (state) => {
         state.isOrdersLoading = true;
         state.error = null;
@@ -93,7 +87,47 @@ export const ordersSlice = createSlice({
       .addCase(getOrders.rejected, (state, action) => {
         state.isOrdersLoading = false;
         state.error = action.error.message ?? 'Не удалось загрузить заказы';
-      })
+      });
+  },
+});
+
+type TOrderDetailsState = {
+  orderData: TOrder | null;
+  isOrderDataLoading: boolean;
+  error: string | null;
+};
+
+const orderDetailsInitialState: TOrderDetailsState = {
+  orderData: null,
+  isOrderDataLoading: false,
+  error: null,
+};
+
+export const getOrderByNumber = createAsyncThunk<TOrder, number>(
+  'orderDetails/getOrderByNumber',
+  async (number) => {
+    const data = await getOrderByNumberApi(number);
+
+    if (!data.success) {
+      throw new Error('Не удалось загрузить заказ');
+    }
+
+    const order = data.orders[0];
+
+    if (!order) {
+      throw new Error('Заказ не найден');
+    }
+
+    return order;
+  }
+);
+
+export const orderDetailsSlice = createSlice({
+  name: 'orderDetails',
+  initialState: orderDetailsInitialState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
       .addCase(getOrderByNumber.pending, (state) => {
         state.isOrderDataLoading = true;
         state.orderData = null;
@@ -111,5 +145,7 @@ export const ordersSlice = createSlice({
   },
 });
 
-export const { clearOrderModal } = ordersSlice.actions;
-export const ordersReducer = ordersSlice.reducer;
+export const { clearOrderModal } = orderSlice.actions;
+export const orderReducer = orderSlice.reducer;
+export const userOrdersReducer = userOrdersSlice.reducer;
+export const orderDetailsReducer = orderDetailsSlice.reducer;

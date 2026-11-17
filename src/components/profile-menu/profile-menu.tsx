@@ -10,7 +10,6 @@ export const ProfileMenu = (): React.JSX.Element => {
   const navigate = useNavigate();
 
   const handleLogout = (): void => {
-    // TODO: Разлогинить пользователя
     void dispatch(logoutUser())
       .unwrap()
       .then(() => {

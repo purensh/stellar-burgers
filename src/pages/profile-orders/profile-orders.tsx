@@ -9,7 +9,6 @@ import { useDispatch, useSelector } from '@services/store';
 
 export const ProfileOrders = (): React.JSX.Element => {
   const dispatch = useDispatch();
-  /** TODO: взять переменную из стора */
   const orders = useSelector(selectOrders);
   const isOrdersLoading = useSelector(selectOrdersLoading);
   const ingredients = useSelector(selectIngredients);

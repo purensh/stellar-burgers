@@ -14,17 +14,14 @@ export const BurgerConstructorElement = memo(function BurgerConstructorElement({
   const dispatch = useDispatch();
 
   const handleMoveDown = (): void => {
-    // TODO
     dispatch(moveIngredient({ from: index, to: index + 1 }));
   };
 
   const handleMoveUp = (): void => {
-    // TODO
     dispatch(moveIngredient({ from: index, to: index - 1 }));
   };
 
   const handleClose = (): void => {
-    // TODO
     dispatch(removeIngredient(ingredient.id));
   };
 

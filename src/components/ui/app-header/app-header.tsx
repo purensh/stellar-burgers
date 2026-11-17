@@ -5,7 +5,7 @@ import {
   Logo,
 } from '@krgaa/react-developer-burger-ui-components';
 import { clsx } from 'clsx';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 import type { TAppHeaderUIProps } from './type';
 
@@ -14,10 +14,10 @@ import styles from './app-header.module.css';
 const getLinkClassName = ({ isActive }: { isActive: boolean }): string =>
   clsx(styles.link, isActive && styles.link_active);
 
-export const AppHeaderUI = ({ userName }: TAppHeaderUIProps): React.JSX.Element => {
-  const { pathname } = useLocation();
-  const isConstructorRoute = pathname === '/' || pathname.startsWith('/ingredients/');
-
+export const AppHeaderUI = ({
+  userName,
+  isConstructorActive = false,
+}: TAppHeaderUIProps): React.JSX.Element => {
   return (
     <header className={styles.header}>
       <nav className={clsx(styles.menu, 'p-4')}>
@@ -26,13 +26,13 @@ export const AppHeaderUI = ({ userName }: TAppHeaderUIProps): React.JSX.Element 
             to="/"
             end
             className={({ isActive }) =>
-              getLinkClassName({ isActive: isActive || isConstructorRoute })
+              getLinkClassName({ isActive: isActive || isConstructorActive })
             }
           >
             {({ isActive }) => (
               <>
                 <BurgerIcon
-                  type={isActive || isConstructorRoute ? 'primary' : 'secondary'}
+                  type={isActive || isConstructorActive ? 'primary' : 'secondary'}
                 />
                 <p className="text text_type_main-default ml-2 mr-10">Конструктор</p>
               </>
