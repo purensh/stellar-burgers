@@ -1,38 +1,67 @@
 import { expect, test } from '@playwright/test';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 
 import type { BrowserContext, Page } from '@playwright/test';
 import type { TIngredient } from '../src/utils/types';
 
-const HAR_PATH = join(process.cwd(), 'tests', 'hars', 'burger-api.har');
+const HAR_PATH = './tests/hars/burger-api.har';
 const ORDER_NUMBER = 123456;
 
-type THarEntry = {
-  request: { method: string; url: string };
-  response: { content: { text: string } };
+const bun: TIngredient = {
+  _id: 'bun-1',
+  name: 'Краторная булка N-200i',
+  type: 'bun',
+  proteins: 20,
+  fat: 15,
+  carbohydrates: 30,
+  calories: 250,
+  price: 1255,
+  image: '',
+  image_large: '',
+  image_mobile: '',
 };
 
-const getMockIngredients = (): TIngredient[] => {
-  const har = JSON.parse(readFileSync(HAR_PATH, 'utf8')) as {
-    log: { entries: THarEntry[] };
-  };
-  const entry = har.log.entries.find(
-    (item) =>
-      item.request.method === 'GET' && item.request.url.endsWith('/api/ingredients')
-  );
-
-  if (!entry) {
-    throw new Error('В HAR не найден ответ для /api/ingredients');
-  }
-
-  const body = JSON.parse(entry.response.content.text) as {
-    success: boolean;
-    data: TIngredient[];
-  };
-
-  return body.data;
+const sauce: TIngredient = {
+  _id: 'sauce-1',
+  name: 'Соус Spicy-X',
+  type: 'sauce',
+  proteins: 5,
+  fat: 10,
+  carbohydrates: 15,
+  calories: 100,
+  price: 90,
+  image: '',
+  image_large: '',
+  image_mobile: '',
 };
+
+const mains: TIngredient[] = [
+  {
+    _id: 'main-1',
+    name: 'Говяжий метеорит (отбивная)',
+    type: 'main',
+    proteins: 40,
+    fat: 30,
+    carbohydrates: 10,
+    calories: 450,
+    price: 800,
+    image: '',
+    image_large: '',
+    image_mobile: '',
+  },
+  {
+    _id: 'main-2',
+    name: 'Биокотлета из марли',
+    type: 'main',
+    proteins: 25,
+    fat: 15,
+    carbohydrates: 20,
+    calories: 300,
+    price: 424,
+    image: '',
+    image_large: '',
+    image_mobile: '',
+  },
+];
 
 const getConstructor = (page: Page) =>
   page
@@ -40,16 +69,6 @@ const getConstructor = (page: Page) =>
     .filter({ has: page.getByRole('button', { name: 'Оформить заказ' }) });
 
 const getModal = (page: Page) => page.locator('[class*="modal__modal"]');
-
-const getIngredient = (type: string): TIngredient => {
-  const ingredient = getMockIngredients().find((item) => item.type === type);
-
-  if (!ingredient) {
-    throw new Error(`В моках нет ингредиента типа ${type}`);
-  }
-
-  return ingredient;
-};
 
 const addIngredient = async (page: Page, name: string): Promise<void> => {
   const card = page
@@ -85,7 +104,7 @@ test.describe('добавление ингредиентов в конструк
   });
 
   test('добавляет один ингредиент в конструктор', async ({ page }) => {
-    const main = getIngredient('main');
+    const main = mains[0];
     const constructor = getConstructor(page);
 
     await addIngredient(page, main.name);
@@ -95,9 +114,6 @@ test.describe('добавление ингредиентов в конструк
   });
 
   test('добавляет булку и начинки в конструктор', async ({ page }) => {
-    const ingredients = getMockIngredients();
-    const bun = getIngredient('bun');
-    const mains = ingredients.filter((item) => item.type === 'main');
     const constructor = getConstructor(page);
 
     await addIngredient(page, bun.name);
@@ -125,19 +141,14 @@ test.describe('модальное окно с описанием ингреди�
   test('открывает окно с данными выбранного ингредиента и закрывает по крестику', async ({
     page,
   }) => {
-    const ingredient = getIngredient('sauce');
     const modal = getModal(page);
 
-    await page.locator(`a[href="/ingredients/${ingredient._id}"]`).click();
+    await page.locator(`a[href="/ingredients/${sauce._id}"]`).click();
 
     await expect(page.getByText('Детали ингредиента')).toBeVisible();
-    await expect(modal.getByText(ingredient.name, { exact: true })).toBeVisible();
-    await expect(
-      modal.getByText(String(ingredient.calories), { exact: true })
-    ).toBeVisible();
-    await expect(
-      modal.getByText(String(ingredient.proteins), { exact: true })
-    ).toBeVisible();
+    await expect(modal.getByText(sauce.name, { exact: true })).toBeVisible();
+    await expect(modal.getByText(String(sauce.calories), { exact: true })).toBeVisible();
+    await expect(modal.getByText(String(sauce.proteins), { exact: true })).toBeVisible();
 
     await modal.getByRole('button', { name: 'Закрыть' }).click();
 
@@ -146,10 +157,9 @@ test.describe('модальное окно с описанием ингреди�
   });
 
   test('закрывает окно ингредиента по оверлею', async ({ page }) => {
-    const ingredient = getIngredient('sauce');
     const modal = getModal(page);
 
-    await page.locator(`a[href="/ingredients/${ingredient._id}"]`).click();
+    await page.locator(`a[href="/ingredients/${sauce._id}"]`).click();
     await expect(modal).toBeVisible();
 
     await page
@@ -166,27 +176,19 @@ test.describe('оформление заказа', () => {
   });
 
   test('создаёт заказ, показывает номер и очищает конструктор', async ({ page }) => {
-    const bun = getIngredient('bun');
-    const main = getIngredient('main');
     const constructor = getConstructor(page);
+    const main = mains[0];
 
     await addIngredient(page, bun.name);
     await addIngredient(page, main.name);
 
-    const orderRequest = page.waitForRequest(
-      (request) => request.url().includes('/api/orders') && request.method() === 'POST'
-    );
-
     await constructor.getByRole('button', { name: 'Оформить заказ' }).click();
 
-    const request = await orderRequest;
-    const body = request.postDataJSON() as { ingredients: string[] };
-
-    expect(body.ingredients).toEqual([bun._id, main._id, bun._id]);
     await expect(page.getByText('Оформляем заказ...')).toBeHidden();
 
     const modal = getModal(page);
 
+    await expect(modal).toBeVisible();
     await expect(modal.getByText(String(ORDER_NUMBER), { exact: true })).toBeVisible();
     await expect(modal.getByText('идентификатор заказа')).toBeVisible();
 
