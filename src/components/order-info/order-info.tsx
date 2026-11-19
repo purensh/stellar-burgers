@@ -1,21 +1,38 @@
-import { Preloader, OrderInfoUI } from '@ui';
-import { useMemo } from 'react';
+import {
+  selectIngredients,
+  selectIngredientsError,
+  selectIngredientsLoading,
+} from '@selectors/ingredients';
+import {
+  selectOrderData,
+  selectOrderDataLoading,
+  selectOrderDetailsError,
+} from '@selectors/orders';
+import { getOrderByNumber } from '@slices/orders';
+import { OrderInfoUI, Preloader } from '@ui';
+import { useEffect, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
+
+import { useDispatch, useSelector } from '@services/store';
 
 import type { TIngredient } from '@utils-types';
 
 export const OrderInfo = (): React.JSX.Element => {
-  /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0,
-  };
+  const { number } = useParams<{ number: string }>();
+  const dispatch = useDispatch();
+  const orderData = useSelector(selectOrderData);
+  const ingredients = useSelector(selectIngredients);
+  const isOrderDataLoading = useSelector(selectOrderDataLoading);
+  const isIngredientsLoading = useSelector(selectIngredientsLoading);
+  const orderDetailsError = useSelector(selectOrderDetailsError);
+  const ingredientsError = useSelector(selectIngredientsError);
+  const orderNumber = Number(number);
 
-  const ingredients: TIngredient[] = [];
+  useEffect(() => {
+    if (!Number.isFinite(orderNumber) || orderNumber <= 0) return;
+
+    void dispatch(getOrderByNumber(orderNumber));
+  }, [dispatch, orderNumber]);
 
   /* Готовим данные для отображения */
   const orderInfo = useMemo(() => {
@@ -56,6 +73,30 @@ export const OrderInfo = (): React.JSX.Element => {
       total,
     };
   }, [orderData, ingredients]);
+
+  if (!Number.isFinite(orderNumber) || orderNumber <= 0) {
+    return <p className="text text_type_main-default">Заказ не найден</p>;
+  }
+
+  if (isOrderDataLoading || isIngredientsLoading) {
+    return <Preloader />;
+  }
+
+  if (orderDetailsError) {
+    return (
+      <p className="text text_type_main-default">
+        Не удалось загрузить заказ: {orderDetailsError}
+      </p>
+    );
+  }
+
+  if (ingredientsError) {
+    return (
+      <p className="text text_type_main-default">
+        Не удалось загрузить ингредиенты: {ingredientsError}
+      </p>
+    );
+  }
 
   if (!orderInfo) {
     return <Preloader />;
