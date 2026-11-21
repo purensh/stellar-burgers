@@ -5,6 +5,7 @@ import {
   moveIngredient,
   removeIngredient,
 } from './constructor';
+import { bun, mains } from './mocks';
 
 import type {
   TConstructorIngredient,
@@ -12,52 +13,30 @@ import type {
   TIngredient,
 } from '@utils-types';
 
-const bun: TIngredient = {
-  _id: 'bun-1',
-  name: 'Краторная булка N-200i',
-  type: 'bun',
-  proteins: 20,
-  fat: 15,
-  carbohydrates: 30,
-  calories: 250,
-  price: 1255,
-  image: '',
-  image_large: '',
-  image_mobile: '',
-};
-
-const firstMain: TIngredient = {
-  _id: 'main-1',
-  name: 'Говяжий метеорит (отбивная)',
-  type: 'main',
-  proteins: 40,
-  fat: 30,
-  carbohydrates: 10,
-  calories: 450,
-  price: 800,
-  image: '',
-  image_large: '',
-  image_mobile: '',
-};
-
-const secondMain: TIngredient = {
-  _id: 'main-2',
-  name: 'Биокотлета из марли',
-  type: 'main',
-  proteins: 25,
-  fat: 15,
-  carbohydrates: 20,
-  calories: 300,
-  price: 424,
-  image: '',
-  image_large: '',
-  image_mobile: '',
-};
+const firstMain = mains[0];
+const secondMain = mains[1];
 
 const withId = (ingredient: TIngredient, id: string): TConstructorIngredient => ({
   ...ingredient,
   id,
 });
+
+const firstIngredient = withId(firstMain, 'id-1');
+const secondIngredient = withId(secondMain, 'id-2');
+const thirdIngredient = withId(
+  { ...firstMain, _id: 'main-3', name: 'Третья начинка' },
+  'id-3'
+);
+
+const filledConstructor: TConstructorState = {
+  bun: withId(bun, 'bun-id'),
+  ingredients: [firstIngredient, secondIngredient],
+};
+
+const constructorWithThreeMains: TConstructorState = {
+  bun: null,
+  ingredients: [firstIngredient, secondIngredient, thirdIngredient],
+};
 
 describe('constructorReducer', () => {
   it('возвращает начальное состояние для неизвестного экшена', () => {
@@ -85,54 +64,38 @@ describe('constructorReducer', () => {
   });
 
   it('удаляет начинку через removeIngredient', () => {
-    const first = withId(firstMain, 'id-1');
-    const second = withId(secondMain, 'id-2');
-    const previous: TConstructorState = {
-      bun: null,
-      ingredients: [first, second],
-    };
+    const state = constructorReducer(
+      constructorWithThreeMains,
+      removeIngredient('id-2')
+    );
 
-    const state = constructorReducer(previous, removeIngredient('id-1'));
-
-    expect(state.ingredients).toEqual([second]);
+    expect(state.ingredients).toEqual([firstIngredient, thirdIngredient]);
   });
 
   it('перемещает начинку через moveIngredient', () => {
-    const first = withId(firstMain, 'id-1');
-    const second = withId(secondMain, 'id-2');
-    const previous: TConstructorState = {
-      bun: null,
-      ingredients: [first, second],
-    };
+    const state = constructorReducer(
+      constructorWithThreeMains,
+      moveIngredient({ from: 0, to: 2 })
+    );
 
-    const state = constructorReducer(previous, moveIngredient({ from: 0, to: 1 }));
-
-    expect(state.ingredients).toEqual([second, first]);
+    expect(state.ingredients).toEqual([
+      secondIngredient,
+      thirdIngredient,
+      firstIngredient,
+    ]);
   });
 
   it('не меняет состояние при невалидном moveIngredient', () => {
-    const first = withId(firstMain, 'id-1');
-    const second = withId(secondMain, 'id-2');
-    const previous: TConstructorState = {
-      bun: null,
-      ingredients: [first, second],
-    };
-
-    expect(constructorReducer(previous, moveIngredient({ from: 0, to: 0 }))).toEqual(
-      previous
-    );
-    expect(constructorReducer(previous, moveIngredient({ from: 0, to: 5 }))).toEqual(
-      previous
-    );
+    expect(
+      constructorReducer(filledConstructor, moveIngredient({ from: 0, to: 0 }))
+    ).toEqual(filledConstructor);
+    expect(
+      constructorReducer(filledConstructor, moveIngredient({ from: 0, to: 5 }))
+    ).toEqual(filledConstructor);
   });
 
   it('очищает конструктор через clearConstructor', () => {
-    const previous: TConstructorState = {
-      bun: withId(bun, 'bun-id'),
-      ingredients: [withId(firstMain, 'id-1'), withId(secondMain, 'id-2')],
-    };
-
-    expect(constructorReducer(previous, clearConstructor())).toEqual({
+    expect(constructorReducer(filledConstructor, clearConstructor())).toEqual({
       bun: null,
       ingredients: [],
     });
